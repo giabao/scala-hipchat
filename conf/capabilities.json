@@ -1,0 +1,34 @@
+{
+    "name": "My Scala Hipchat",
+    "description": "My Scala Hipchat addon",
+    "key": "com.sandinh.hipchat.change_me",
+    "vendor": {
+        "name": "Sân Đình",
+        "url": "https://sandinh.com"
+    },
+    "links": {
+        "homepage": "https://sandinh.com",
+        "self": "http://localhost:9000/hipchat/capabilities"
+    },
+    "capabilities": {
+        "hipchatApiConsumer": {
+            "scopes": [
+                "send_message",
+                "view_messages",
+                "send_notification",
+                "admin_group",
+                "admin_room",
+                "manage_rooms",
+                "view_group"
+            ],
+            "fromName": "ImHere"
+        },
+        "installable": {
+            "callbackUrl": "http://localhost:9000/hipchat/installable",
+            "allowRoom": false
+        },
+        "configurable": {
+            "url": "http://localhost:9000/hipchat/configure"
+        }
+    }
+}

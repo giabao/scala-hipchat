@@ -1,0 +1,11 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET           /hipchat/capabilities               controllers.hipchat.Capabilities.index
+
+POST          /hipchat/installable                controllers.hipchat.Installable.install
+
+DELETE        /hipchat/installable/oauthId        controllers.hipchat.Installable.uninstall(oauthId)
+
+GET           /hipchat/configure                  controllers.hipchat.Configure.index
