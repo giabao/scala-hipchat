@@ -24,8 +24,7 @@ I want a "better" lib than [hipchat-scala](https://github.com/poweld/hipchat-sca
 ## Dev guide
 I use Intellij IDEA with scala plugin
 ### Setup H2 embed database to to store tenants data
-+ Create data file ![Create data file](https://farm4.staticflickr.com/3930/15231240687_eb54c962f1_o.png)
-+ Update db.default section in `conf/application.conf`
+@see db.default section in `conf/application.conf`
 
 ### Licence
 This software is licensed under the Apache 2 license:

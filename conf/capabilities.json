@@ -8,7 +8,7 @@
     },
     "links": {
         "homepage": "https://sandinh.com",
-        "self": "http://localhost:9000/hipchat/capabilities"
+        "self": "https://chanpro.com/hipchat/capabilities"
     },
     "capabilities": {
         "hipchatApiConsumer": {
@@ -24,11 +24,11 @@
             "fromName": "ImHere"
         },
         "installable": {
-            "callbackUrl": "http://localhost:9000/hipchat/installable",
+            "callbackUrl": "https://chanpro.com/hipchat/installable",
             "allowRoom": false
         },
         "configurable": {
-            "url": "http://localhost:9000/hipchat/configure"
+            "url": "https://chanpro.com/hipchat/configure"
         }
     }
 }
