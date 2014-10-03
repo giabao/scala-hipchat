@@ -1,10 +1,10 @@
 package com.sandinh.hipchat
 
 import com.sandinh.hipchat.vo.request._
-import ReqTransform.{Trans, idenTrans, timezoneQs}
+import ReqTransform.{Trans, idenTrans, timezoneQs, expandQs}
 import com.sandinh.hipchat.vo.enums.Scope
 import Scope.Scope
-import com.sandinh.hipchat.vo.response.{GetRoomResponse, CreateRoomResponse, AuthResponse}
+import com.sandinh.hipchat.vo.response._
 import play.api.Logger
 import play.api.Play.current
 import play.api.http.HeaderNames.CONTENT_TYPE
@@ -49,7 +49,7 @@ object RestClient {
 
   def getCapabilities(url: String): Future[JsValue] = get(url, null)
 
-  def generateToken(linkToken: String, username: String, password: String, scopes: Set[Scope]): Future[AuthResponse] =
+  def generateToken(linkToken: String, username: String, password: String, scopes: Set[Scope]): Future[Token] =
     post(linkToken, null, 200,
       _.withHeaders(CONTENT_TYPE -> FORM)
         .withAuth(username, password, WSAuthScheme.BASIC)
@@ -57,57 +57,86 @@ object RestClient {
           "grant_type" -> "client_credentials",
           "scope" -> scopes.mkString(" ")
         )
-    ) map (_.json.as[AuthResponse])
+    ) map (_.json.as[Token])
 }
 
 class RestClient(apiUrl: String = "https://api.hipchat.com/v2") { import RestClient._
-  def getEmoticons(opt: => GetEmoticons = new GetEmoticons())(token: String) = get(s"$apiUrl/emoticon", token, opt.trans)
+  /** @param expand some of [items] */
+  def getEmoticons(opt: => GetEmoticons = new GetEmoticons(), expand: String = null)(token: String) =
+    get(s"$apiUrl/emoticon", token, opt.trans andThen expandQs(expand))
+      .map(_.as[Emoticons])
 
-  def getEmoticon(idOrKey: String)(token: String) = get(s"$apiUrl/emoticon/${enc(idOrKey)}", token)
+  def getEmoticon(idOrKey: String)(token: String) =
+    get(s"$apiUrl/emoticon/${enc(idOrKey)}", token)
+      .map(_.as[Emoticon])
 
   def deleteSession(token: String) = del(s"$apiUrl/oauth/token/${enc(token)}", token)
 
-  def getSession(token: String) = get(s"$apiUrl/oauth/token/${enc(token)}", token)
+  /** @param expand some of [owner,client.room] */
+  def getSession(token: String, expand: String = null) =
+    get(s"$apiUrl/oauth/token/${enc(token)}", token)
+      .map(_.as[Session])
 
-  def getRoomMessage(idOrName: String, messageId: String, timezone: String = "UTC")(token: String) =
-    get(s"$apiUrl/room/${enc(idOrName)}/history/${enc(messageId)}", token, timezoneQs(timezone))
+  /** @param expand some of [message.from,message.mentions] */
+  def getRoomMessage(idOrName: String, messageId: String, timezone: String = "UTC", expand: String = null)(token: String) =
+    get(s"$apiUrl/room/${enc(idOrName)}/history/${enc(messageId)}", token, timezoneQs(timezone) andThen expandQs(expand))
+      .map(_.as[MessageWrapper])
 
   def createRoom(room: CreateRoom)(token: String) =
-    post(s"$apiUrl/room", token, 201, room.trans).map(_.json.as[CreateRoomResponse])
+    post(s"$apiUrl/room", token, 201, room.trans)
+      .map(_.json.as[EntityCreated])
 
-  def getRooms(opt: => GetRooms = new GetRooms())(token: String) = get(s"$apiUrl/room", token, opt.trans)
+  /** @param expand some of [items] */
+  def getRooms(opt: => GetRooms = new GetRooms(), expand: String = null)(token: String) =
+    get(s"$apiUrl/room", token, opt.trans andThen expandQs(expand))
+      .map(_.as[Rooms])
 
-  def getRecentRoomHistory(idOrName: String, opt: => GetRecentHistory = GetRecentHistory())(token: String) =
-    get(s"$apiUrl/room/${enc(idOrName)}/history/latest", token, opt.trans)
+  /** @param expand some of [items.from,items.mentions] */
+  def getRecentRoomHistory(idOrName: String, opt: => GetRecentHistory = GetRecentHistory(), expand: String = null)(token: String) =
+    get(s"$apiUrl/room/${enc(idOrName)}/history/latest", token, opt.trans andThen expandQs(expand))
+      .map(_.as[Messages])
 
   def sendNotification(idOrName: String, notification: Notification)(token: String) =
     post(s"$apiUrl/room/${enc(idOrName)}/notification", token, 204, notification.trans)
+      .map(_ => true)
 
   def updateRoom(room: UpdateRoom)(token: String) = put(s"$apiUrl/room/${enc(room.name)}", token, room.trans)
 
-  def getRoom(idOrName: String)(token: String) = get(s"$apiUrl/room/${enc(idOrName)}", token).map(_.as[GetRoomResponse])
+  /** @param expand some of [statistics,participants,owner] */
+  def getRoom(idOrName: String, expand: String = null)(token: String) =
+    get(s"$apiUrl/room/${enc(idOrName)}", token, expandQs(expand))
+      .map(_.as[Room])
 
   def deleteRoom(idOrName: String)(token: String) = del(s"$apiUrl/room/${enc(idOrName)}", token)
 
   def createWebhook(roomIdOrName: String, webhook: CreateWebhook)(token: String) =
     post(s"$apiUrl/room/${enc(roomIdOrName)}/webhook", token, 201, webhook.trans)
+      .map(_.json.as[EntityCreated])
 
-  def getWebhooks(roomIdOrName: String, paging: => Paging = new Paging())(token: String) =
-    get(s"$apiUrl/room/${enc(roomIdOrName)}/webhook", token, paging.trans)
+  /** @param expand some of [items] */
+  def getWebhooks(roomIdOrName: String, paging: => Paging = new Paging(), expand: String = null)(token: String) =
+    get(s"$apiUrl/room/${enc(roomIdOrName)}/webhook", token, paging.trans andThen expandQs(expand))
+      .map(_.as[Webhooks])
 
-  def getRoomStatistics(roomIdOrName: String)(token: String) = get(s"$apiUrl/room/${enc(roomIdOrName)}/statistics", token)
+  def getRoomStatistics(roomIdOrName: String)(token: String) =
+    get(s"$apiUrl/room/${enc(roomIdOrName)}/statistics", token)
+      .map(_.as[RoomStatistics])
 
   def replyToMessage(roomIdOrName: String, reply: Reply)(token: String): Future[Boolean] =
-    post(s"$apiUrl/room/${enc(roomIdOrName)}/reply", token, 204, reply.trans).map(_ => true)
+    post(s"$apiUrl/room/${enc(roomIdOrName)}/reply", token, 204, reply.trans)
+      .map(_ => true)
 
-  def getRoomMembers(roomIdOrName: String, paging: => Paging = new Paging())(token: String) =
-    get(s"$apiUrl/room/${enc(roomIdOrName)}/member", token, paging.trans)
+  /** @param expand some of [items] */
+  def getRoomMembers(roomIdOrName: String, paging: => Paging = new Paging(), expand: String = null)(token: String) =
+    get(s"$apiUrl/room/${enc(roomIdOrName)}/member", token, paging.trans andThen expandQs(expand))
+      .map(_.as[Users])
 
   def setRoomTopic(roomIdOrName: String, topic: String)(token: String) =
     put(s"$apiUrl/room/${enc(roomIdOrName)}/topic", token, _.withBody(Json.obj("topic" -> topic)))
 
   def shareLinkWithRoom(roomIdOrName: String, share: ShareLink)(token: String): Future[Boolean] =
-    post(s"$apiUrl/room/${enc(roomIdOrName)}/share/link", token, 204, share.trans).map(_ => true)
+    post(s"$apiUrl/room/${enc(roomIdOrName)}/share/link", token, 204, share.trans)
+      .map(_ => true)
 
   def addRoomMember(roomIdOrName: String, userIdOrEmail: String)(token: String) =
     put(s"$apiUrl/room/${enc(roomIdOrName)}/member/${enc(userIdOrEmail)}", token)
@@ -118,17 +147,26 @@ class RestClient(apiUrl: String = "https://api.hipchat.com/v2") { import RestCli
   def deleteWebhook(roomIdOrName: String, webhookId: String)(token: String) =
     del(s"$apiUrl/room/${enc(roomIdOrName)}/webhook/${enc(webhookId)}", token)
 
-  def getWebhook(roomIdOrName: String, webhookId: String)(token: String) =
-    get(s"$apiUrl/room/${enc(roomIdOrName)}/webhook/${enc(webhookId)}", token)
+  /** @param expand some of [room,creator] */
+  def getWebhook(roomIdOrName: String, webhookId: String, expand: String = null)(token: String) =
+    get(s"$apiUrl/room/${enc(roomIdOrName)}/webhook/${enc(webhookId)}", token, expandQs(expand))
+      .map(_.as[Webhook])
 
-  def getRoomHistory(roomIdOrName: String, opt: GetRoomHistory)(token: String) =
-    get(s"$apiUrl/room/${enc(roomIdOrName)}/history", token, opt.trans)
+  /** @param expand some of [items.from,items.mentions] */
+  def getRoomHistory(roomIdOrName: String, opt: GetRoomHistory, expand: String = null)(token: String) =
+    get(s"$apiUrl/room/${enc(roomIdOrName)}/history", token, opt.trans andThen expandQs(expand))
+      .map(_.as[Messages])
 
-  def getPrivateChatMessage(userIdOrEmail: String, messageId: String, timezone: String = "UTC")(token: String) =
-    get(s"$apiUrl/user/${enc(userIdOrEmail)}/history/${enc(messageId)}", token, timezoneQs(timezone))
+  /** @param expand some of [message.from,message.mentions] */
+  def getPrivateChatMessage(userIdOrEmail: String, messageId: String,
+                            timezone: String = "UTC", expand: String = null)(token: String) =
+    get(s"$apiUrl/user/${enc(userIdOrEmail)}/history/${enc(messageId)}", token, timezoneQs(timezone) andThen expandQs(expand))
+      .map(_.as[MessageWrapper])
 
-  def getRecentPrivateChatHistory(userIdOrEmail: String, opt: => GetRecentHistory = GetRecentHistory())(token: String) =
-    get(s"$apiUrl/user/${enc(userIdOrEmail)}/history/latest", token, opt.trans)
+  /** @param expand some of [items.from,items.mentions] */
+  def getRecentPrivateChatHistory(userIdOrEmail: String, opt: => GetRecentHistory = GetRecentHistory(), expand: String = null)(token: String) =
+    get(s"$apiUrl/user/${enc(userIdOrEmail)}/history/latest", token, opt.trans andThen expandQs(expand))
+      .map(_.as[Messages])
 
   /** @param photo Base64 encoded. Accepted image types are JPEG, PNG and GIF */
   def updateUserPhoto(userIdOrEmail: String, photo: String)(token: String) =
@@ -142,11 +180,18 @@ class RestClient(apiUrl: String = "https://api.hipchat.com/v2") { import RestCli
 
   def deleteUser(userIdOrEmail: String)(token: String) = del(s"$apiUrl/user/${enc(userIdOrEmail)}", token)
 
-  def getUser(userIdOrEmail: String)(token: String) = get(s"$apiUrl/user/${enc(userIdOrEmail)}", token)
+  def getUser(userIdOrEmail: String)(token: String) =
+    get(s"$apiUrl/user/${enc(userIdOrEmail)}", token)
+      .map(_.as[User])
 
-  def getUsers(opt: GetUsers)(token: String) = get(s"$apiUrl/user", token, opt.trans)
+  /** @param expand some of [items] */
+  def getUsers(opt: GetUsers, expand: String = null)(token: String) =
+    get(s"$apiUrl/user", token, opt.trans andThen expandQs(expand))
+      .map(_.as[Users])
 
-  def createUser(user: CreateUser)(token: String) = post(s"$apiUrl/user", token, 201, user.trans)
+  def createUser(user: CreateUser)(token: String) =
+    post(s"$apiUrl/user", token, 201, user.trans)
+      .map(_.json.as[EntityCreated])
 
   def shareLinkWithUser(userIdOrEmail: String, share: ShareLink)(token: String): Future[Boolean] =
     post(s"$apiUrl/user/${enc(userIdOrEmail)}/share/link", token, 204, share.trans).map(_ => true)

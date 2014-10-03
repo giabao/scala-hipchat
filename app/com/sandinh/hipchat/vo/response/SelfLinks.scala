@@ -8,3 +8,8 @@ object SelfLinks {
   implicit val reads = Json.reads[SelfLinks]
   val readsLinks = (__ \ "links").read[SelfLinks]
 }
+
+object SelfLinksOnly {
+  implicit val reads = Json.reads[SelfLinksOnly]
+}
+case class SelfLinksOnly(links: SelfLinks)

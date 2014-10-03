@@ -16,4 +16,6 @@ object ReqTransform {
     if (v == default) h else h.withQueryString(k -> v.toString)
 
   def timezoneQs(timezone: String) = qs("timezone", timezone, "UTC")
+
+  def expandQs(expand: String) = qs("expand", expand, null)
 }
