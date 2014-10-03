@@ -1,8 +1,8 @@
 package com.sandinh.hipchat
 
-import com.sandinh.hipchat.vo.response.{RoomStatistics, User}
-import org.specs2.specification.AllExpectations
+import com.sandinh.hipchat.vo.response.RoomStatistics
 import org.specs2.mutable.Specification
+import org.specs2.specification.AllExpectations
 import play.api.Application
 import play.api.libs.json.JsObject
 import play.api.test.WithApplication
@@ -32,8 +32,8 @@ class GetRoomSpec extends Specification with AllExpectations {
           statistics.links.self ===(tenantTest.linkApi + "/room/1/statistics")
       }.await(timeout = timeout)
 
-      roomFut.map(_.ownerExpand) must beLike[User]{
-        case u => u.is_guest must beFalse
+      roomFut.map { room =>
+        room.ownerExpand.is_guest must beFalse
       }.await(timeout = timeout)
     }
   }

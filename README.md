@@ -20,6 +20,14 @@ I want a "better" lib than [hipchat-scala](https://github.com/poweld/hipchat-sca
         + @see [SslGuide.md] to setup & run the applicatino with https.
         + scala-hipchat use [Play Framework](https://www.playframework.com/documentation/2.3.x/Installing). Goto their docs for other help.
     + Just TenantClient.fromCache(tenantId) to get a Option[TenantClient] of the installed client. Then tenantClient.someApiMethod to invoke the hipchat api
++ All api methods is implemented, with typesafed and [expand-support](https://www.hipchat.com/docs/apiv2/expansion)
+    + Ex:
+    ```
+    tenantClient.getRoom("1", "statistics,owner").map { room =>
+        room.ownerExpand.is_guest must beFalse
+    }.await(timeout = 5.seconds)
+    ```
+    + @note The api is fully implemented (at least as in [ac-node-hipchat](https://bitbucket.org/atlassianlabs/ac-node-hipchat)) but not fully tested (althought I think it is already work as expected). If you use this lib, please contribute to it by adding specs. @see [GetRoomSpec](/test/com/sandinh/hipchat/GetRoomSpec.scala).
 
 ## Dev guide
 I use Intellij IDEA with scala plugin
