@@ -6,8 +6,10 @@ object Tenant {
 }
 
 //see ac-koa-hipchat / tenant-factory.js
-case class Tenant(id: String,
-                  secret: String,
-                  // group: String, ???
-                  linkApi: String,
-                  linkToken: String)
+case class Tenant(
+  id:     String,
+  secret: String,
+  // group: String, ???
+  linkApi:   String,
+  linkToken: String
+)

@@ -8,7 +8,7 @@ trait ReqTransform {
 }
 
 object ReqTransform {
-  private[hipchat] type Trans = WSRequestHolder => WSRequestHolder
+  private[hipchat]type Trans = WSRequestHolder => WSRequestHolder
   private[hipchat] val idenTrans: Trans = h => h
 
   /** withQueryString Trans maker */

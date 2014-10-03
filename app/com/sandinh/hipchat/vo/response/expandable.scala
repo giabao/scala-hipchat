@@ -31,7 +31,7 @@ trait HasCreatorOpt {
 }
 
 /** @tparam B Brief type
-  * @tparam E Expanded type */
+ *  @tparam E Expanded type */
 abstract class HasItems[B: Reads, E: Reads] {
   def items: JsArray
   lazy val itemsBrief = items.as[Seq[B]]

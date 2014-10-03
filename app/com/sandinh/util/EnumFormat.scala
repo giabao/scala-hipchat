@@ -3,7 +3,7 @@ package com.sandinh.util
 import play.api.libs.json._
 
 /** Support to convert enums to Json
-  * @see http://stackoverflow.com/questions/15488639/how-to-write-readst-and-writest-in-scala-enumeration-play-framework-2-1/15489179#15489179 */
+ *  @see http://stackoverflow.com/questions/15488639/how-to-write-readst-and-writest-in-scala-enumeration-play-framework-2-1/15489179#15489179 */
 object EnumFormat {
   def reads[E <: Enumeration](enum: E): Reads[E#Value] = new Reads[E#Value] {
     def reads(json: JsValue): JsResult[E#Value] = json match {

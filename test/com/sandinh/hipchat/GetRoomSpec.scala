@@ -17,7 +17,7 @@ class GetRoomSpec extends Specification with AllExpectations {
 
       roomFut.map(_.statisticsBrief.links.self) must ===(tenantTest.linkApi + "/room/1/statistics").await(timeout = timeout)
 
-      roomFut.map(_.statistics) must beLike[JsObject]{
+      roomFut.map(_.statistics) must beLike[JsObject] {
         //`messages_sent` is not in GetRoomResponse.briefStatistics
         case js => (js \ "messages_sent").validate[Int].isSuccess must beFalse
       }.await(timeout = timeout)
@@ -26,10 +26,10 @@ class GetRoomSpec extends Specification with AllExpectations {
     "getRoom with expand" in new WithApplication {
       val roomFut = tenantClient.getRoom("1", "statistics,owner")
 
-      roomFut.map(_.statisticsExpand) must beLike[RoomStatistics]{
+      roomFut.map(_.statisticsExpand) must beLike[RoomStatistics] {
         case statistics =>
           statistics.messages_sent must be_>=(0) and
-          statistics.links.self ===(tenantTest.linkApi + "/room/1/statistics")
+            statistics.links.self === (tenantTest.linkApi + "/room/1/statistics")
       }.await(timeout = timeout)
 
       roomFut.map { room =>

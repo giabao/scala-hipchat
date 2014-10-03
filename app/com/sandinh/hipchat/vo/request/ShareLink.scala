@@ -11,7 +11,7 @@ class ShareLink(link: String, message: String = null) extends ReqTransform {
     Json.obj(
       "link" -> link
     ) ++ JsBuilder.<+(
-      "message", message, null
-    ).result
+        "message", message, null
+      ).result
   )
 }

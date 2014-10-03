@@ -8,8 +8,7 @@ import java.util.concurrent.TimeUnit.SECONDS
 object Global extends GlobalSettings {
   override def onStart(app: Application): Unit = {
     val restoreTenantsFuture = Future.traverse(TenantStore.getAll)(tenant =>
-      TenantClient(tenant).getToken
-    )
+      TenantClient(tenant).getToken)
     try {
       val timeout = app.configuration.underlying
         .getDuration("com.sandinh.scala-hipchat.tenants-restore-timeout", SECONDS).seconds

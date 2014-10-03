@@ -11,7 +11,7 @@ object Installable extends Controller {
   def install = Action.async(parse.json) {
     _.body.validate[InstallData]
       .map(doInstall)
-      .recoverTotal { _ => Future successful BadRequest}
+      .recoverTotal { _ => Future successful BadRequest }
   }
 
   //@see Receiving Registration Information / Installation part at https://www.hipchat.com/docs/apiv2/addons

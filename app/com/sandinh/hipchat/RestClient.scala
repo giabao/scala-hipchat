@@ -19,7 +19,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object RestClient {
   private[this] def req(url: String, method: String, expectStatus: Int,
                         token: String = null,
-                        trans: Trans = idenTrans): Future[WSResponse] = {
+                        trans: Trans  = idenTrans): Future[WSResponse] = {
     var h = WS.url(url).withMethod(method)
     if (token != null) h = h.withHeaders("Authorization" -> s"Bearer $token")
     h = trans(h)
@@ -56,11 +56,11 @@ object RestClient {
         .withQueryString(
           "grant_type" -> "client_credentials",
           "scope" -> scopes.mkString(" ")
-        )
-    ) map (_.json.as[Token])
+        )) map (_.json.as[Token])
 }
 
-class RestClient(apiUrl: String = "https://api.hipchat.com/v2") { import RestClient._
+class RestClient(apiUrl: String = "https://api.hipchat.com/v2") {
+  import RestClient._
   /** @param expand some of [items] */
   def getEmoticons(opt: => GetEmoticons = new GetEmoticons(), expand: String = null)(token: String) =
     get(s"$apiUrl/emoticon", token, opt.trans andThen expandQs(expand))

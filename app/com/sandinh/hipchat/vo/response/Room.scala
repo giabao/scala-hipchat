@@ -11,23 +11,27 @@ object Room {
 }
 
 /** @param is_guest_accessible maybe null ??? */
-case class Room(xmpp_jid: String,
-                statistics: JsObject,
-                name: String,
-                links: Room.Links,
-                created: String,
-                is_archived: Boolean,
-                privacy: Privacy,
-                is_guest_accessible: Boolean,
-                topic: String,
-                participants: JsArray,
-                owner: JsObject,
-                id: Int,
-                guest_access_url: Option[String]) extends HasOwner with HasStatistics with HasParticipants
+case class Room(
+  xmpp_jid:            String,
+  statistics:          JsObject,
+  name:                String,
+  links:               Room.Links,
+  created:             String,
+  is_archived:         Boolean,
+  privacy:             Privacy,
+  is_guest_accessible: Boolean,
+  topic:               String,
+  participants:        JsArray,
+  owner:               JsObject,
+  id:                  Int,
+  guest_access_url:    Option[String]
+) extends HasOwner with HasStatistics with HasParticipants
 
-case class RoomBrief(id: Int,
-                     links: Room.Links,
-                     name: String)
+case class RoomBrief(
+  id:    Int,
+  links: Room.Links,
+  name:  String
+)
 
 object RoomBrief {
   implicit val reads = Json.reads[RoomBrief]

@@ -34,10 +34,11 @@ class TenantClient(tenant: Tenant, scopes: Set[Scope]) {
   def getToken: Future[String] = {
     Cache.getAs[Token](cacheKey)
       .map(Future.successful)
-      .getOrElse { RestClient
-        .generateToken(tenant.linkToken, tenant.id, tenant.secret, scopes)
-        .andThen { case Success(auth) => Cache.set(cacheKey, auth, auth.expires_in - 60) }
-    }.map(_.access_token)
+      .getOrElse {
+        RestClient
+          .generateToken(tenant.linkToken, tenant.id, tenant.secret, scopes)
+          .andThen { case Success(auth) => Cache.set(cacheKey, auth, auth.expires_in - 60) }
+      }.map(_.access_token)
   }
 
   def getToken(scope: Scope): Future[String] = {
