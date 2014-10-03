@@ -58,9 +58,11 @@ trait HasFromOpt {
 trait HasStatistics {
   def statistics: JsObject
   lazy val statisticsBrief = statistics.as[SelfLinksOnly]
+  lazy val statisticsExpand = statistics.as[RoomStatistics]
 }
 
 trait HasParticipants {
   def participants: JsArray
   lazy val participantsBrief = participants.as[Seq[UserBrief]]
+  lazy val participantsExpand = participants.as[Seq[User]]
 }
